@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Field Maintenance Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        
+        .card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2a5298 0%, #1e90ff 100%);
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2a5298 0%, #1e90ff 100%);
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 82, 152, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #2c3e50;
+            margin-right: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #ff3838;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .equipment-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .equipment-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #2a5298;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .equipment-item:hover {
+            background: #e8eef5;
+        }
+        
+        .equipment-item.selected {
+            background: #d9e5f7;
+            border-left-color: #1e90ff;
+        }
+        
+        .equipment-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        
+        .equipment-item-name {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 13px;
+        }
+        
+        .equipment-item-status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-attention {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-critical {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .equipment-item-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .maintenance-log {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border-left: 4px solid #2a5298;
+        }
+        
+        .log-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .log-entry-title {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 13px;
+        }
+        
+        .log-entry-date {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .log-entry-type {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            background: #2a5298;
+            color: white;
+            border-radius: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .log-entry-description {
+            font-size: 12px;
+            color: #555;
+            line-height: 1.4;
+        }
+        
+        .reminder-item {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe6cc 100%);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .reminder-item.urgent {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-left-color: #f44336;
+        }
+        
+        .reminder-item.completed {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left-color: #4caf50;
+            opacity: 0.7;
+        }
+        
+        .reminder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        
+        .reminder-equipment {
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+        
+        .reminder-days {
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .reminder-check {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+        
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        .full-width-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .full-width-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .tab {
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: #999;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            color: #2a5298;
+            border-bottom-color: #2a5298;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e3c72;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #f44336;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #2a5298;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+        
+        .empty-state-text {
+            font-size: 14px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>⚙️ Field Maintenance Manager</h1>
+            <p>Manage equipment maintenance, track schedules, and generate compliance reports</p>
+        </div>
+
+        <!-- Alerts Container -->
+        <div id="alertsContainer"></div>
+
+        <!-- Stats Dashboard -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-number" id="totalEquipment">0</div>
+                <div class="stat-label">Total Equipment</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="pendingReminders">0</div>
+                <div class="stat-label">Pending Reminders</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="recentLogs">0</div>
+                <div class="stat-label">This Month</div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Left Column: Equipment & Quick Entry -->
+            <div>
+                <!-- Equipment Inventory -->
+                <div class="card">
+                    <h2>
+                        <span class="icon">📋</span>
+                        Equipment Inventory
+                    </h2>
+                    <button class="btn btn-primary" style="margin-bottom: 16px;" onclick="openAddEquipmentModal()">+ Add Equipment</button>
+                    <div class="equipment-list" id="equipmentList"></div>
+                </div>
+
+                <!-- Maintenance Log Entry -->
+                <div class="card" style="margin-top: 24px;">
+                    <h2>
+                        <span class="icon">📝</span>
+                        Quick Log Entry
+                    </h2>
+                    <form onsubmit="handleQuickLog(event)">
+                        <div class="form-group">
+                            <label>Select Equipment*</label>
+                            <select id="quickLogEquipment" required>
+                                <option value="">Choose equipment...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Maintenance Type*</label>
+                            <select id="quickLogType" required>
+                                <option value="">Choose type...</option>
+                                <option value="Routine">Routine Check</option>
+                                <option value="Preventive">Preventive Maintenance</option>
+                                <option value="Corrective">Corrective Repair</option>
+                                <option value="Safety">Safety Inspection</option>
+                                <option value="Calibration">Calibration</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea id="quickLogNotes" placeholder="Describe work performed..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Technician Name*</label>
+                            <input type="text" id="quickLogTechnician" placeholder="Your name" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Log Maintenance</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Reminders & Status -->
+            <div>
+                <!-- Upcoming Reminders -->
+                <div class="card">
+                    <h2>
+                        <span class="icon">⏰</span>
+                        Upcoming Reminders
+                    </h2>
+                    <div id="remindersList"></div>
+                </div>
+
+                <!-- Equipment Status Summary -->
+                <div class="card" style="margin-top: 24px;">
+                    <h2>
+                        <span class="icon">📊</span>
+                        Equipment Status
+                    </h2>
+                    <div class="equipment-list" id="statusSummary"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Width: Reports Section -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>
+                <span class="icon">📈</span>
+                Reports & Analytics
+            </h2>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('monthlyReport')">Monthly Overview</button>
+                <button class="tab" onclick="switchTab('equipmentReport')">Equipment Details</button>
+                <button class="tab" onclick="switchTab('techniciansReport')">Technician Activity</button>
+            </div>
+
+            <div id="monthlyReport" class="tab-content active">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Equipment</th>
+                            <th>Total Logs</th>
+                            <th>Last Maintained</th>
+                            <th>Days Since</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monthlyReportBody">
+                        <tr>
+                            <td colspan="5" class="empty-state">No data yet. Add equipment and log maintenance to see reports.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="equipmentReport" class="tab-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Equipment</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Next Check</th>
+                            <th>Priority</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="equipmentReportBody">
+                        <tr>
+                            <td colspan="6" class="empty-state">No equipment added yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="techniciansReport" class="tab-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Technician</th>
+                            <th>Logs This Month</th>
+                            <th>Last Active</th>
+                            <th>Equipment Handled</th>
+                        </tr>
+                    </thead>
+                    <tbody id="techniciansReportBody">
+                        <tr>
+                            <td colspan="4" class="empty-state">No activity recorded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Equipment Modal -->
+    <div id="addEquipmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Add New Equipment</span>
+                <button class="modal-close" onclick="closeModal('addEquipmentModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddEquipment(event)">
+                <div class="form-group">
+                    <label>Equipment Name*</label>
+                    <input type="text" id="equipmentName" placeholder="e.g., Pump Unit A-1" required>
+                </div>
+                <div class="form-group">
+                    <label>Equipment Type*</label>
+                    <select id="equipmentType" required>
+                        <option value="">Select type...</option>
+                        <option value="Pump">Pump</option>
+                        <option value="Compressor">Compressor</option>
+                        <option value="Separator">Separator</option>
+                        <option value="Wellhead">Wellhead</option>
+                        <option value="Valve">Valve Assembly</option>
+                        <option value="Generator">Generator</option>
+                        <option value="Motor">Motor</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Location/Field*</label>
+                    <input type="text" id="equipmentLocation" placeholder="e.g., North Field, Zone 3" required>
+                </div>
+                <div class="form-group">
+                    <label>Installation Date</label>
+                    <input type="date" id="equipmentInstallDate">
+                </div>
+                <div class="form-group">
+                    <label>Maintenance Schedule (Days)*</label>
+                    <input type="number" id="equipmentSchedule" placeholder="e.g., 30" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Priority Level*</label>
+                    <select id="equipmentPriority" required>
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Serial Number</label>
+                    <input type="text" id="equipmentSerial" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="equipmentNotes" placeholder="Any additional information..."></textarea>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addEquipmentModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="width: auto;">Add Equipment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="detailsTitle">Equipment Details</span>
+                <button class="modal-close" onclick="closeModal('detailsModal')">&times;</button>
+            </div>
+            <div id="detailsContent"></div>
+            <div style="display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('detailsModal')">Close</button>
+                <button class="btn btn-danger btn-small" id="deleteEquipmentBtn" onclick="deleteSelectedEquipment()">Delete Equipment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Data Management & Storage
+        // ============================================
+        
+        const API_URL = 'http://localhost:3000/api';
+        let equipment = [];
+        let maintenanceLogs = [];
+        let schedules = [];
+        let selectedEquipmentId = null;
+
+        // Initialize app
+        async function initApp() {
+            try {
+                await loadData();
+                renderDashboard();
+            } catch (error) {
+                console.error('Init error:', error);
+                showAlert('Failed to load application data', 'error');
+            }
+        }
+
+        // Load data from backend
+        async function loadData() {
+            try {
+                const [equipRes, logsRes, schedRes] = await Promise.all([
+                    fetch(`${API_URL}/equipment`),
+                    fetch(`${API_URL}/logs`),
+                    fetch(`${API_URL}/schedules`)
+                ]);
+
+                if (equipRes.ok) equipment = await equipRes.json();
+                if (logsRes.ok) maintenanceLogs = await logsRes.json();
+                if (schedRes.ok) schedules = await schedRes.json();
+            } catch (error) {
+                console.warn('API not available, using local storage');
+                equipment = JSON.parse(localStorage.getItem('equipment') || '[]');
+                maintenanceLogs = JSON.parse(localStorage.getItem('logs') || '[]');
+                schedules = JSON.parse(localStorage.getItem('schedules') || '[]');
+            }
+        }
+
+        // Save data to backend or local storage
+        async function saveData() {
+            try {
+                localStorage.setItem('equipment', JSON.stringify(equipment));
+                localStorage.setItem('logs', JSON.stringify(maintenanceLogs));
+                localStorage.setItem('schedules', JSON.stringify(schedules));
+            } catch (error) {
+                console.error('Save error:', error);
+            }
+        }
+
+        // ============================================
+        // Equipment Management
+        // ============================================
+
+        async function handleAddEquipment(e) {
+            e.preventDefault();
+            
+            const newEquipment = {
+                id: Date.now(),
+                name: document.getElementById('equipmentName').value,
+                type: document.getElementById('equipmentType').value,
+                location: document.getElementById('equipmentLocation').value,
+                installDate: document.getElementById('equipmentInstallDate').value || null,
+                scheduleInterval: parseInt(document.getElementById('equipmentSchedule').value),
+                priority: document.getElementById('equipmentPriority').value,
+                serial: document.getElementById('equipmentSerial').value || '',
+                notes: document.getElementById('equipmentNotes').value || '',
+                createdDate: new Date().toISOString(),
+                lastMaintained: null,
+                status: 'Active'
+            };
+
+            equipment.push(newEquipment);
+            
+            // Create schedule
+            schedules.push({
+                id: Date.now(),
+                equipmentId: newEquipment.id,
+                nextDueDate: calculateNextDue(newEquipment.scheduleInterval),
+                lastDueDate: null,
+                interval: newEquipment.scheduleInterval
+            });
+
+            await saveData();
+            closeModal('addEquipmentModal');
+            document.getElementById('equipmentName').value = '';
+            document.getElementById('equipmentSerial').value = '';
+            document.getElementById('equipmentNotes').value = '';
+            renderDashboard();
+            showAlert('Equipment added successfully!', 'success');
+        }
+
+        function deleteSelectedEquipment() {
+            if (!selectedEquipmentId) return;
+            
+            equipment = equipment.filter(e => e.id !== selectedEquipmentId);
+            maintenanceLogs = maintenanceLogs.filter(l => l.equipmentId !== selectedEquipmentId);
+            schedules = schedules.filter(s => s.equipmentId !== selectedEquipmentId);
+            
+            saveData();
+            closeModal('detailsModal');
+            renderDashboard();
+            showAlert('Equipment deleted successfully!', 'success');
+        }
+
+        // ============================================
+        // Maintenance Logging
+        // ============================================
+
+        async function handleQuickLog(e) {
+            e.preventDefault();
+            
+            const equipmentId = parseInt(document.getElementById('quickLogEquipment').value);
+            const equip = equipment.find(e => e.id === equipmentId);
+            
+            if (!equip) {
+                showAlert('Please select equipment', 'error');
+                return;
+            }
+
+            const logEntry = {
+                id: Date.now(),
+                equipmentId: equipmentId,
+                type: document.getElementById('quickLogType').value,
+                notes: document.getElementById('quickLogNotes').value,
+                technician: document.getElementById('quickLogTechnician').value,
+                date: new Date().toISOString(),
+                nextScheduledDate: calculateNextDue(equip.scheduleInterval)
+            };
+
+            maintenanceLogs.push(logEntry);
+
+            // Update equipment last maintained
+            equip.lastMaintained = new Date().toISOString();
+            equip.status = 'Active';
+
+            // Update schedule
+            const schedule = schedules.find(s => s.equipmentId === equipmentId);
+            if (schedule) {
+                schedule.lastDueDate = new Date().toISOString();
+                schedule.nextDueDate = calculateNextDue(schedule.interval);
+            }
+
+            await saveData();
+            
+            // Reset form
+            document.getElementById('quickLogEquipment').value = '';
+            document.getElementById('quickLogType').value = '';
+            document.getElementById('quickLogNotes').value = '';
+            document.getElementById('quickLogTechnician').value = '';
+            
+            renderDashboard();
+            showAlert('Maintenance logged successfully!', 'success');
+        }
+
+        // ============================================
+        // Calculations & Helpers
+        // ============================================
+
+        function calculateNextDue(daysInterval) {
+            const date = new Date();
+            date.setDate(date.getDate() + daysInterval);
+            return date.toISOString();
+        }
+
+        function getDaysSince(dateString) {
+            if (!dateString) return null;
+            const days = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
+            return days;
+        }
+
+        function getDaysUntil(dateString) {
+            if (!dateString) return null;
+            const days = Math.floor((new Date(dateString) - new Date()) / (1000 * 60 * 60 * 24));
+            return days;
+        }
+
+        function getEquipmentStatus(equip) {
+            const schedule = schedules.find(s => s.equipmentId === equip.id);
+            if (!schedule) return { status: 'Unknown', class: '' };
+            
+            const daysUntil = getDaysUntil(schedule.nextDueDate);
+            if (daysUntil <= 0) return { status: 'Overdue', class: 'status-critical' };
+            if (daysUntil <= 7) return { status: 'Due Soon', class: 'status-attention' };
+            return { status: 'Active', class: 'status-active' };
+        }
+
+        function getThisMonthLogs() {
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            return maintenanceLogs.filter(log => new Date(log.date) >= monthStart).length;
+        }
+
+        // ============================================
+        // Rendering Functions
+        // ============================================
+
+        function renderDashboard() {
+            updateStats();
+            renderEquipmentList();
+            renderRemindersList();
+            renderStatusSummary();
+            renderMonthlyReport();
+            renderEquipmentReport();
+            renderTechniciansReport();
+            updateQuickLogEquipmentOptions();
+        }
+
+        function updateStats() {
+            document.getElementById('totalEquipment').textContent = equipment.length;
+            
+            const pendingCount = schedules.filter(s => {
+                const daysUntil = getDaysUntil(s.nextDueDate);
+                return daysUntil <= 7 && daysUntil > -1;
+            }).length;
+            document.getElementById('pendingReminders').textContent = pendingCount;
+            
+            document.getElementById('recentLogs').textContent = getThisMonthLogs();
+        }
+
+        function renderEquipmentList() {
+            const container = document.getElementById('equipmentList');
+            
+            if (equipment.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><div class="empty-state-text">No equipment added yet</div></div>';
+                return;
+            }
+
+            container.innerHTML = equipment.map(equip => {
+                const status = getEquipmentStatus(equip);
+                const daysSince = getDaysSince(equip.lastMaintained);
+                
+                return `
+                    <div class="equipment-item ${selectedEquipmentId === equip.id ? 'selected' : ''}" onclick="selectEquipment(${equip.id})">
+                        <div class="equipment-item-header">
+                            <span class="equipment-item-name">${equip.name}</span>
+                            <span class="equipment-item-status ${status.class}">${status.status}</span>
+                        </div>
+                        <div class="equipment-item-meta">
+                            ${equip.type} • ${equip.location}
+                            ${daysSince !== null ? `<br>Last maintained: ${daysSince} days ago` : '<br>Never maintained'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRemindersList() {
+            const container = document.getElementById('remindersList');
+            
+            const reminders = schedules
+                .map(schedule => {
+                    const equip = equipment.find(e => e.id === schedule.equipmentId);
+                    const daysUntil = getDaysUntil(schedule.nextDueDate);
+                    return { ...schedule, equip, daysUntil };
+                })
+                .filter(r => r.equip && r.daysUntil <= 14 && r.daysUntil >= -30)
+                .sort((a, b) => a.daysUntil - b.daysUntil);
+
+            if (reminders.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✓</div><div class="empty-state-text">All equipment is current</div></div>';
+                return;
+            }
+
+            container.innerHTML = reminders.map(reminder => {
+                const isUrgent = reminder.daysUntil <= 3;
+                const isOverdue = reminder.daysUntil <= 0;
+                
+                let daysText = '';
+                if (isOverdue) {
+                    daysText = `<strong>OVERDUE</strong> ${Math.abs(reminder.daysUntil)} days`;
+                } else if (reminder.daysUntil === 1) {
+                    daysText = 'Due <strong>tomorrow</strong>';
+                } else if (reminder.daysUntil === 0) {
+                    daysText = 'Due <strong>today</strong>';
+                } else {
+                    daysText = `Due in <strong>${reminder.daysUntil}</strong> days`;
+                }
+
+                return `
+                    <div class="reminder-item ${isUrgent ? 'urgent' : ''}">
+                        <div class="reminder-header">
+                            <span class="reminder-equipment">${reminder.equip.name}</span>
+                            <span class="reminder-days">${daysText}</span>
+                        </div>
+                        <div class="reminder-check">${reminder.equip.type} • Schedule: every ${reminder.interval} days</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderStatusSummary() {
+            const container = document.getElementById('statusSummary');
+            
+            if (equipment.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">No equipment to display</div></div>';
+                return;
+            }
+
+            const statuses = {};
+            equipment.forEach(equip => {
+                const status = getEquipmentStatus(equip).status;
+                statuses[status] = (statuses[status] || 0) + 1;
+            });
+
+            container.innerHTML = Object.entries(statuses).map(([status, count]) => {
+                let statusClass = 'status-active';
+                if (status === 'Overdue') statusClass = 'status-critical';
+                if (status === 'Due Soon') statusClass = 'status-attention';
+                
+                return `
+                    <div class="equipment-item">
+                        <div class="equipment-item-header">
+                            <span class="equipment-item-name">${status}</span>
+                            <span class="equipment-item-status ${statusClass}">${count} Equipment</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMonthlyReport() {
+            const tbody = document.getElementById('monthlyReportBody');
+            
+            if (equipment.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No equipment added yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = equipment.map(equip => {
+                const equipLogs = maintenanceLogs.filter(l => l.equipmentId === equip.id);
+                const thisMonthLogs = equipLogs.filter(l => {
+                    const now = new Date();
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    return new Date(l.date) >= monthStart;
+                }).length;
+
+                const lastLog = equipLogs.length > 0 ? equipLogs[equipLogs.length - 1] : null;
+                const daysSince = lastLog ? getDaysSince(lastLog.date) : 'Never';
+                const status = getEquipmentStatus(equip);
+
+                return `
+                    <tr>
+                        <td><strong>${equip.name}</strong></td>
+                        <td>${equipLogs.length}</td>
+                        <td>${lastLog ? new Date(lastLog.date).toLocaleDateString() : 'N/A'}</td>
+                        <td>${typeof daysSince === 'number' ? daysSince + ' days' : daysSince}</td>
+                        <td><span class="equipment-item-status ${status.class}">${status.status}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderEquipmentReport() {
+            const tbody = document.getElementById('equipmentReportBody');
+            
+            if (equipment.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No equipment added yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = equipment.map(equip => {
+                const schedule = schedules.find(s => s.equipmentId === equip.id);
+                const status = getEquipmentStatus(equip);
+                const nextDue = schedule ? new Date(schedule.nextDueDate).toLocaleDateString() : 'N/A';
+
+                return `
+                    <tr>
+                        <td><strong>${equip.name}</strong></td>
+                        <td>${equip.type}</td>
+                        <td>${equip.location}</td>
+                        <td>${nextDue}</td>
+                        <td><span class="equipment-item-status ${status.class}">${equip.priority}</span></td>
+                        <td><button class="btn btn-secondary btn-small" onclick="selectEquipment(${equip.id})">View</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderTechniciansReport() {
+            const tbody = document.getElementById('techniciansReportBody');
+            
+            if (maintenanceLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No activity recorded yet.</td></tr>';
+                return;
+            }
+
+            const technicianMap = {};
+            maintenanceLogs.forEach(log => {
+                if (!technicianMap[log.technician]) {
+                    technicianMap[log.technician] = {
+                        logsCount: 0,
+                        lastActive: log.date,
+                        equipment: new Set()
+                    };
+                }
+                technicianMap[log.technician].logsCount++;
+                technicianMap[log.technician].lastActive = log.date;
+                
+                const equip = equipment.find(e => e.id === log.equipmentId);
+                if (equip) technicianMap[log.technician].equipment.add(equip.name);
+            });
+
+            const thisMonth = new Date();
+            const monthStart = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1);
+
+            tbody.innerHTML = Object.entries(technicianMap).map(([name, data]) => {
+                const thisMonthCount = maintenanceLogs.filter(l => 
+                    l.technician === name && new Date(l.date) >= monthStart
+                ).length;
+
+                return `
+                    <tr>
+                        <td><strong>${name}</strong></td>
+                        <td>${thisMonthCount}</td>
+                        <td>${new Date(data.lastActive).toLocaleDateString()}</td>
+                        <td>${Array.from(data.equipment).join(', ')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateQuickLogEquipmentOptions() {
+            const select = document.getElementById('quickLogEquipment');
+            const currentValue = select.value;
+            
+            select.innerHTML = '<option value="">Choose equipment...</option>' + 
+                equipment.map(equip => `<option value="${equip.id}">${equip.name}</option>`).join('');
+            
+            select.value = currentValue;
+        }
+
+        // ============================================
+        // UI Interactions
+        // ============================================
+
+        function selectEquipment(equipmentId) {
+            selectedEquipmentId = equipmentId;
+            const equip = equipment.find(e => e.id === equipmentId);
+            
+            if (!equip) return;
+
+            const equipLogs = maintenanceLogs.filter(l => l.equipmentId === equipmentId);
+            const schedule = schedules.find(s => s.equipmentId === equipmentId);
+            const status = getEquipmentStatus(equip);
+
+            let detailsHTML = `
+                <div style="margin-bottom: 20px;">
+                    <div class="full-width-grid" style="margin-bottom: 16px;">
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Equipment Name</div>
+                            <div style="font-weight: 600; font-size: 16px;">${equip.name}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Status</div>
+                            <div><span class="equipment-item-status ${status.class}">${status.status}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="full-width-grid" style="margin-bottom: 16px;">
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Type</div>
+                            <div>${equip.type}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Priority</div>
+                            <div style="font-weight: 600;">${equip.priority}</div>
+                        </div>
+                    </div>
+
+                    <div class="full-width-grid" style="margin-bottom: 16px;">
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Location</div>
+                            <div>${equip.location}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Schedule</div>
+                            <div>Every ${schedule ? schedule.interval : 'N/A'} days</div>
+                        </div>
+                    </div>
+
+                    ${equip.serial ? `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Serial Number</div>
+                        <div>${equip.serial}</div>
+                    </div>
+                    ` : ''}
+
+                    ${equip.lastMaintained ? `
+                    <div class="full-width-grid" style="margin-bottom: 16px;">
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Last Maintained</div>
+                            <div>${new Date(equip.lastMaintained).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Days Since</div>
+                            <div>${getDaysSince(equip.lastMaintained)} days ago</div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${schedule ? `
+                    <div class="full-width-grid" style="margin-bottom: 20px;">
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Next Check Due</div>
+                            <div>${new Date(schedule.nextDueDate).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Days Until Due</div>
+                            <div>${getDaysUntil(schedule.nextDueDate)} days</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div style="border-top: 1px solid #ddd; padding-top: 16px; margin-bottom: 16px;">
+                    <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Maintenance History</h3>
+                    ${equipLogs.length > 0 ? `
+                        <div class="maintenance-log">
+                            ${equipLogs.slice().reverse().map(log => `
+                                <div class="log-entry">
+                                    <div class="log-entry-header">
+                                        <div>
+                                            <div class="log-entry-type">${log.type}</div>
+                                            <div class="log-entry-title">${log.technician}</div>
+                                        </div>
+                                        <div class="log-entry-date">${new Date(log.date).toLocaleDateString()}</div>
+                                    </div>
+                                    ${log.notes ? `<div class="log-entry-description">${log.notes}</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '<div class="empty-state"><small>No maintenance logs yet</small></div>'}
+                </div>
+
+                ${equip.notes ? `
+                <div style="border-top: 1px solid #ddd; padding-top: 16px;">
+                    <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Notes</h3>
+                    <div style="font-size: 13px; color: #555; line-height: 1.6;">${equip.notes}</div>
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('detailsTitle').textContent = equip.name + ' - Details';
+            document.getElementById('detailsContent').innerHTML = detailsHTML;
+            openModal('detailsModal');
+            renderEquipmentList();
+        }
+
+        function openAddEquipmentModal() {
+            openModal('addEquipmentModal');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alertsContainer');
+            const alertId = Date.now();
+            const alertHTML = `
+                <div class="alert alert-${type}" id="alert-${alertId}">
+                    ${message}
+                </div>
+            `;
+            container.innerHTML += alertHTML;
+            
+            setTimeout(() => {
+                const alert = document.getElementById(`alert-${alertId}`);
+                if (alert) alert.remove();
+            }, 4000);
+        }
+
+        // Modal background click handling
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+</body>
+</html>
